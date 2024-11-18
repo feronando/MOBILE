@@ -2,7 +2,7 @@ import 'package:f05_lugares_app/model/lugar.dart';
 import 'package:f05_lugares_app/model/pais.dart';
 import 'package:flutter/material.dart';
 
-const paises = const [
+final paises = [
   Pais(
     id: 'c1',
     titulo: 'Estados Unidos',
@@ -45,11 +45,11 @@ const paises = const [
   ),
 ];
 
-const lugares = const [
+final lugares = [
   Lugar(
     id: 'p1',
     titulo: 'Praia',
-    paises: ['c8', 'c5', 'c9','c7'],
+    paises: ['c8', 'c5', 'c9', 'c7'],
     avaliacao: 4.8,
     custoMedio: 20,
     recomendacoes: [

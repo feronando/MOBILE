@@ -24,7 +24,7 @@ class LugarPorPaisScreen extends StatelessWidget {
             color: Colors.white, // Change this to the desired color
           ),
         ),
-        body: Consumer<LugaresNotifier>(
+        body: Consumer<LugaresProvider>(
           builder: (ctx, lugares, child) {
             List<Lugar> lugaresPorPais = lugares.getLugaresPorPais(pais.id)
               ..sort((a, b) =>

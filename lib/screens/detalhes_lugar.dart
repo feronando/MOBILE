@@ -20,35 +20,11 @@ class DetalhesLugarScreen extends StatefulWidget {
 }
 
 class _DetalhesLugarScreenState extends State<DetalhesLugarScreen> {
-  final _formKey = GlobalKey<FormState>();
-
-  late String _titulo;
-  late double _avaliacao;
-  late double _custoMedio;
-  late String _imagemUrl;
-  late List<String> _paisesSelecionados;
-  late List<TextEditingController> _recomendacoes = [];
-
   void favoritar(BuildContext context, Lugar lugar) {
-    Provider.of<FavoritosNotifier>(context, listen: false).favoritar(lugar);
+    Provider.of<FavoritosProvider>(context, listen: false).favoritar(lugar);
   }
 
-  void _addRecomendacao() {
-    setState(() {
-      _recomendacoes.add(TextEditingController(text: ''));
-      print("Recomendacao added: ${_recomendacoes.length}");
-    });
-  }
-
-  void _removeRecomendacao(int index) {
-    setState(() {
-      _recomendacoes[index].dispose();
-      _recomendacoes.removeAt(index);
-      print("Recomendacao removed: ${_recomendacoes.length}");
-    });
-  }
-
-  void _showDialog(BuildContext context, Lugar lugar) {
+  void _showDeleteDialog(BuildContext context, Lugar lugar) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -64,7 +40,7 @@ class _DetalhesLugarScreenState extends State<DetalhesLugarScreen> {
             ),
             TextButton(
               onPressed: () {
-                Provider.of<LugaresNotifier>(context, listen: false)
+                Provider.of<LugaresProvider>(context, listen: false)
                     .remove(lugar, context);
 
                 Navigator.of(context).pushReplacementNamed(
@@ -91,270 +67,198 @@ class _DetalhesLugarScreenState extends State<DetalhesLugarScreen> {
     );
   }
 
-  void _showModal(BuildContext context, Lugar lugar) {
+  void _showEditDialog(BuildContext context, Lugar lugar) {
+    final _formKey = GlobalKey<FormState>();
+    final _tituloController = TextEditingController(text: lugar.titulo);
+    final _imagemUrlController = TextEditingController(text: lugar.imagemUrl);
+    final _avaliacaoController =
+        TextEditingController(text: lugar.avaliacao.toString());
+    final _custoMedioController =
+        TextEditingController(text: lugar.custoMedio.toString());
+    final List<TextEditingController> _recomendacoesControllers = lugar
+        .recomendacoes
+        .map((recomendacao) => TextEditingController(text: recomendacao))
+        .toList();
+    List<Pais> _paisesSelecionados =
+        Provider.of<PaisesProvider>(context, listen: false)
+            .paises
+            .where((pais) => lugar.paises.contains(pais.id))
+            .toList();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        _titulo = lugar.titulo;
-        _avaliacao = lugar.avaliacao;
-        _custoMedio = lugar.custoMedio;
-        _imagemUrl = lugar.imagemUrl;
-        _paisesSelecionados = List.from(lugar.paises);
-        _recomendacoes = List.from(
-            lugar.recomendacoes.map((l) => TextEditingController(text: l)));
-
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter setModalState) {
-          double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-          return Container(
-            padding: EdgeInsets.only(
-              left: 20,
-              right: 20,
-              top: 20,
-              bottom: keyboardHeight + 50,
-            ),
-            child: SingleChildScrollView(
+        return AlertDialog(
+          title: const Text("Editar Lugar"),
+          content: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Center(
-                    child: Text('Edição de Lugar',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w500)),
+                  TextFormField(
+                    controller: _tituloController,
+                    decoration: const InputDecoration(labelText: "Título"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo obrigatório';
+                      }
+                      return null;
+                    },
                   ),
-                  const Divider(),
-                  const SizedBox(height: 20),
-                  Form(
-                    key: _formKey,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            initialValue: _titulo,
-                            decoration: InputDecoration(
-                                labelText: 'Título',
-                                filled: true,
-                                fillColor: const Color(0x34B5B5B5),
-                                border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(5)),
-                                labelStyle: TextStyle(fontSize: 14)),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obrigatório';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _titulo = value ?? '';
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            initialValue: _imagemUrl,
-                            decoration: InputDecoration(
-                                labelText: 'URL da Imagem',
-                                filled: true,
-                                fillColor: const Color(0x34B5B5B5),
-                                border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(5)),
-                                labelStyle: TextStyle(fontSize: 14)),
-                            onSaved: (value) {
-                              _imagemUrl = value ?? '';
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            initialValue: _avaliacao.toString(),
-                            decoration: InputDecoration(
-                                labelText: 'Avaliação',
-                                filled: true,
-                                fillColor: const Color(0x34B5B5B5),
-                                border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(5)),
-                                labelStyle: TextStyle(fontSize: 14)),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obrigatório';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Valor numérico inválido';
-                              }
-                              if (double.parse(value) < 0 ||
-                                  double.parse(value) > 5) {
-                                return 'Precisa ser um valor entre 0 e 5';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _avaliacao = double.parse(value ?? '0');
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          TextFormField(
-                            initialValue: _custoMedio.toString(),
-                            decoration: InputDecoration(
-                                labelText: 'Custo Médio',
-                                filled: true,
-                                fillColor: const Color(0x34B5B5B5),
-                                border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                    borderRadius: BorderRadius.circular(5)),
-                                labelStyle: TextStyle(fontSize: 14)),
-                            keyboardType: TextInputType.number,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obrigatório';
-                              }
-                              if (double.tryParse(value) == null) {
-                                return 'Valor numérico inválido';
-                              }
-                              if (double.parse(value) < 0) {
-                                return 'Precisa ser um valor maior que 0';
-                              }
-                              return null;
-                            },
-                            onSaved: (value) {
-                              _custoMedio = double.parse(value ?? '0');
-                            },
-                          ),
-                          const SizedBox(height: 10),
-                          // MultiSelectDialogField(
-                          //   buttonText: const Text("Países"),
-                          //   buttonIcon: Icon(Icons.arrow_drop_down),
-                          //   title: Text(
-                          //     "Selecione os países:",
-                          //     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                          //   ),
-                          //   decoration: BoxDecoration(
-                          //       color: const Color(0x34B5B5B5),
-                          //       borderRadius: BorderRadius.circular(5)),
-                          //   chipDisplay: MultiSelectChipDisplay.none(),
-                          //   initialValue: _paisesSelecionados.cast<dynamic>(),
-                          //   items: Provider.of<PaisesNotifier>(context, listen: false)
-                          //       .paises
-                          //       .map((pais) => MultiSelectItem(pais, pais.titulo))
-                          //       .toList()
-                          //     ..sort((a, b) =>
-                          //         a.label.toUpperCase().compareTo(b.label.toUpperCase())),
-                          //   listType: MultiSelectListType.LIST,
-                          //   onConfirm: (values) {
-                          //       _paisesSelecionados = List.from(values.map());
-                          //   },
-                          //   validator: (value) {
-                          //     if (value == null || value.isEmpty) {
-                          //       return 'Pelo menos 1 país deve ser selecionado';
-                          //     }
-                          //     return null;
-                          //   },
-                          // ),
-                          // const SizedBox(height: 5),
-                          // MultiSelectChipDisplay(
-                          //   items: _paisesSelecionados
-                          //       .map((p) => MultiSelectItem(p, p.titulo))
-                          //       .toList()
-                          //     ..sort((a, b) =>
-                          //         a.label.toUpperCase().compareTo(b.label.toUpperCase())),
-                          //   onTap: (value) {
-                          //     setState(() {
-                          //       _paisesSelecionados.remove(value);
-                          //     });
-                          //   },
-                          // ),
-                          const SizedBox(height: 5),
-                          const Text(
-                            "Recomendações:",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 10),
-                          ListView.builder(
-                            key: ValueKey(_recomendacoes.length),
-                            shrinkWrap: true,
-                            itemCount: _recomendacoes.length,
-                            itemBuilder: (context, index) {
-                              return Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextFormField(
-                                          controller: _recomendacoes[index],
-                                          decoration: InputDecoration(
-                                              labelText:
-                                                  'Recomendação ${index + 1}',
-                                              filled: true,
-                                              fillColor:
-                                                  const Color(0x34B5B5B5),
-                                              border: OutlineInputBorder(
-                                                  borderSide: BorderSide.none,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5)),
-                                              labelStyle: const TextStyle(
-                                                  fontSize: 12)),
-                                          validator: (value) {
-                                            if (value == null ||
-                                                value.isEmpty) {
-                                              return 'Recomendação em branco';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.close),
-                                        iconSize: 20,
-                                        onPressed: () => {
-                                          setModalState(() {
-                                            _recomendacoes[index].dispose();
-                                            _recomendacoes.removeAt(index);
-                                          })
-                                        },
-                                      ),
-                                    ],
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _imagemUrlController,
+                    decoration:
+                        const InputDecoration(labelText: "URL da Imagem"),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _avaliacaoController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Avaliação"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo obrigatório';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Valor numérico inválido';
+                      }
+                      if (double.parse(value) < 0 || double.parse(value) > 5) {
+                        return 'Precisa ser um valor entre 0 e 5';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _custoMedioController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: "Custo Médio"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Campo obrigatório';
+                      }
+                      if (double.tryParse(value) == null) {
+                        return 'Valor numérico inválido';
+                      }
+                      if (double.parse(value) < 0) {
+                        return 'Precisa ser um valor maior que 0';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  MultiSelectDialogField(
+                    buttonText: const Text("Países"),
+                    title: const Text("Selecione os países"),
+                    items: Provider.of<PaisesProvider>(context, listen: false)
+                        .paises
+                        .map((pais) => MultiSelectItem(pais, pais.titulo))
+                        .toList(),
+                    initialValue: _paisesSelecionados,
+                    onConfirm: (values) {
+                      _paisesSelecionados = values.cast<Pais>().toList();
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Pelo menos 1 país deve ser selecionado';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  const Text("Recomendações:"),
+                  StatefulBuilder(builder:
+                      (BuildContext context, StateSetter setDialogState) {
+                    return Column(
+                      children: [
+                        ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _recomendacoesControllers.length,
+                          itemBuilder: (ctx, index) {
+                            return Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller:
+                                        _recomendacoesControllers[index],
+                                    decoration: const InputDecoration(
+                                        labelText: "Recomendação"),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Recomendação em branco';
+                                      }
+                                      return null;
+                                    },
                                   ),
-                                  const SizedBox(height: 15),
-                                ],
-                              );
-                            },
-                          ),
-                          TextButton.icon(
-                            onPressed: () {
-                              setModalState(() {
-                                _recomendacoes
-                                    .add(TextEditingController(text: ''));
-                              });
-                            },
-                            icon: const Icon(
-                              Icons.add,
-                              size: 16,
-                              color: Colors.black,
-                            ),
-                            label: const Text(
-                              "Adicionar recomendação",
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: () {},
-                            child: Text('Salvar alterações'),
-                          )
-                        ],
-                      ),
-                    ),
-                  )
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () {
+                                    setDialogState(() {
+                                      _recomendacoesControllers.removeAt(index);
+                                    });
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            setDialogState(() {
+                              _recomendacoesControllers
+                                  .add(TextEditingController());
+                            });
+                          },
+                          icon: const Icon(Icons.add),
+                          label: const Text("Adicionar Recomendação"),
+                        ),
+                      ],
+                    );
+                  }),
                 ],
               ),
             ),
-          );
-        });
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  Provider.of<LugaresProvider>(context, listen: false).update(
+                      Lugar(
+                        id: lugar.id,
+                        titulo: _tituloController.text,
+                        imagemUrl: _imagemUrlController.text,
+                        avaliacao: double.parse(_avaliacaoController.text),
+                        custoMedio: double.parse(_custoMedioController.text),
+                        paises: _paisesSelecionados.map((p) => p.id).toList(),
+                        recomendacoes: _recomendacoesControllers
+                            .map((controller) => controller.text)
+                            .toList(),
+                      ),
+                      context);
+                  Navigator.of(context).pushReplacementNamed(
+                    '/',
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Lugar atualizado!')),
+                  );
+                }
+              },
+              child: const Text("Salvar"),
+            ),
+          ],
+        );
       },
     );
   }
@@ -376,10 +280,10 @@ class _DetalhesLugarScreenState extends State<DetalhesLugarScreen> {
         ),
         actions: [
           IconButton(
-              onPressed: () => _showModal(context, lugar),
+              onPressed: () => _showEditDialog(context, lugar),
               icon: Icon(Icons.edit)),
           IconButton(
-              onPressed: () => _showDialog(context, lugar),
+              onPressed: () => _showDeleteDialog(context, lugar),
               icon: Icon(Icons.delete))
         ],
       ),

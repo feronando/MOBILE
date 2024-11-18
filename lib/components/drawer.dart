@@ -31,7 +31,6 @@ class MeuDrawer extends StatelessWidget {
               );
             },
           ),
-          Divider(),
           ListTile(
             leading: Icon(
               Icons.engineering,

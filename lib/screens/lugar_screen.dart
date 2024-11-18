@@ -18,7 +18,7 @@ class _LugarScreenState extends State<LugarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<LugaresNotifier>(
+      body: Consumer<LugaresProvider>(
         builder: (ctx, lugares, child) {
           final sortedLugares = List<Lugar>.from(lugares.lugares);
           sortedLugares.sort((a, b) =>

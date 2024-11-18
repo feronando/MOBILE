@@ -30,8 +30,8 @@ class ItemPais extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                Provider.of<PaisesNotifier>(context, listen: false)
-                    .remove(_pais);
+                Provider.of<PaisesProvider>(context, listen: false)
+                    .remove(_pais, context);
 
                 Navigator.of(context).pushReplacementNamed(
                   '/',
@@ -60,7 +60,7 @@ class ItemPais extends StatelessWidget {
   void _editPais(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Provider.of<PaisesNotifier>(context, listen: false).edit(
+      Provider.of<PaisesProvider>(context, listen: false).update(
           Pais(id: _pais.id, titulo: _tituloController.text, cor: _newColor));
 
       Navigator.of(context).pushReplacementNamed(

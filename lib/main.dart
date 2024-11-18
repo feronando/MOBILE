@@ -14,10 +14,11 @@ import 'package:provider/provider.dart';
 void main() {
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (ctx) => PaisesNotifier(paises: paises)),
       ChangeNotifierProvider(
-          create: (ctx) => LugaresNotifier(lugares: lugares)),
-      ChangeNotifierProvider(create: (ctx) => FavoritosNotifier()),
+          create: (ctx) => PaisesProvider(paisesDados: List.from(paises))),
+      ChangeNotifierProvider(
+          create: (ctx) => LugaresProvider(lugaresDados: List.from(lugares))),
+      ChangeNotifierProvider(create: (ctx) => FavoritosProvider()),
     ],
     child: MeuApp(),
   ));

@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import '../model/lugar.dart';
 import 'package:provider/provider.dart';
 
-class LugaresNotifier extends ChangeNotifier {
+class LugaresProvider extends ChangeNotifier {
   final List<Lugar> _lugares;
 
-  LugaresNotifier({required List<Lugar> lugares})
-      : _lugares = List.from(lugares);
+  LugaresProvider({required List<Lugar> lugaresDados})
+      : _lugares = lugaresDados;
 
   List<Lugar> get lugares => _lugares;
 
@@ -18,9 +18,24 @@ class LugaresNotifier extends ChangeNotifier {
   }
 
   void remove(Lugar lugar, BuildContext context) {
+    Provider.of<FavoritosProvider>(context, listen: false).remove(lugar);
     _lugares.remove(lugar);
-    Provider.of<FavoritosNotifier>(context, listen: false).remove(lugar);
     notifyListeners();
+  }
+
+  void update(Lugar lugar, BuildContext context) {
+    Provider.of<FavoritosProvider>(context, listen: false).update(lugar);
+    int index = _lugares.indexWhere((p) => p.id == lugar.id);
+    if (index != -1) {
+      _lugares[index] = lugar;
+      notifyListeners();
+    }
+  }
+
+  void removePais(String idPais) {
+    for (Lugar p in _lugares) {
+      p.paises.remove(idPais);
+    }
   }
 
   List<Lugar> getLugaresPorPais(String paisId) {

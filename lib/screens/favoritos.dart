@@ -14,7 +14,7 @@ class FavoritosScreen extends StatefulWidget {
 class _FavoritosScreenState extends State<FavoritosScreen> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<FavoritosNotifier>(builder: (ctx, favoritos, child) {
+    return Consumer<FavoritosProvider>(builder: (ctx, favoritos, child) {
       if (favoritos.lugaresFavoritos.isEmpty) {
         return const Center(
           child: Text(

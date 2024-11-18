@@ -51,6 +51,7 @@ class _MinhasAbasBottomState extends State<MinhasAbasBottom> {
                 color: Colors.white, // Change this to the desired color
               ),
               backgroundColor: ThemeData().primaryColor,
+              centerTitle: true,
             ),
             drawer: MeuDrawer(),
             body: Column(

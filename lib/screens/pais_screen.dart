@@ -80,7 +80,7 @@ class PaisScreen extends StatelessWidget {
               TextButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Provider.of<PaisesNotifier>(context, listen: false)
+                    Provider.of<PaisesProvider>(context, listen: false)
                         .add(_tituloController.text, _newColor);
 
                     Navigator.of(context).pop();
@@ -112,7 +112,7 @@ class PaisScreen extends StatelessWidget {
     int crossAxisCount = (screenWidth / itemWidth).floor();
 
     return Scaffold(
-      body: Consumer<PaisesNotifier>(builder: (ctx, paises, child) {
+      body: Consumer<PaisesProvider>(builder: (ctx, paises, child) {
         return GridView.count(
             padding: const EdgeInsets.all(16),
             crossAxisCount: 2,

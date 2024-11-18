@@ -41,8 +41,8 @@ class _AdicionarLugarScreenState extends State<AdicionarLugarScreen> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      Provider.of<LugaresNotifier>(context, listen: false).add(Lugar(
-          id: 'p${Provider.of<LugaresNotifier>(context, listen: false).lugares.length + 1}',
+      Provider.of<LugaresProvider>(context, listen: false).add(Lugar(
+          id: 'p${Provider.of<LugaresProvider>(context, listen: false).lugares.length + 1}',
           paises: _paisesSelecionados.map((p) => p.id).toList(),
           titulo: _titulo,
           imagemUrl: _imagemUrl,
@@ -190,7 +190,7 @@ class _AdicionarLugarScreenState extends State<AdicionarLugarScreen> {
                       borderRadius: BorderRadius.circular(5)),
                   chipDisplay: MultiSelectChipDisplay.none(),
                   initialValue: _paisesSelecionados.cast<dynamic>(),
-                  items: Provider.of<PaisesNotifier>(context, listen: false)
+                  items: Provider.of<PaisesProvider>(context, listen: false)
                       .paises
                       .map((pais) => MultiSelectItem(pais, pais.titulo))
                       .toList()
